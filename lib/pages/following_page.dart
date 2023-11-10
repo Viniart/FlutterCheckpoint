@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:github_api_demo/api/github_api.dart';
+import 'package:github_api_demo/models/organization.dart';
 import 'package:github_api_demo/models/repository.dart';
+import 'package:github_api_demo/models/subscription.dart';
 
 import '../models/user.dart';
 
@@ -16,25 +18,30 @@ class _FollowingPageState extends State<FollowingPage> {
   final api = GitHubApi();
   late Future<List<User>> _futureFollowings;
   late Future<List<Repository>> _futureRepos;
+  late Future<List<Organization>> _futureOrgs;
+  late Future<List<Subscription>> _futureSubscriptions;
 
   @override
   void initState() {
     _futureFollowings = api.getFollowing(widget.user.login);
     _futureRepos = api.getRepos(widget.user.login);
+    _futureOrgs = api.getOrgs(widget.user.login);
+    _futureSubscriptions = api.getSubscriptions(widget.user.login);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Informações"),
-          bottom: TabBar(tabs: [
+          bottom: const TabBar(tabs: [
             Text('Followers'),
-            Text('Organizations'),
             Text('Repositories'),
+            Text('Organizations'),
+            Text('Subscriptions'),
           ]),
         ),
         body: TabBarView(
@@ -144,11 +151,12 @@ class _FollowingPageState extends State<FollowingPage> {
                           return const Center(
                               child: CircularProgressIndicator());
                         } else {
-                          var followings = snapshot.data ?? [];
+                          var repositories = snapshot.data ?? [];
+                          
                           return ListView.builder(
-                            itemCount: followings.length,
+                            itemCount: repositories.length,
                             itemBuilder: ((context, index) {
-                              var repo = followings[index];
+                              var repo = repositories[index];
                               return ListTile(
                                 leading: Icon(Icons.accessible),
                                 title: Text(repo.name),
@@ -198,24 +206,93 @@ class _FollowingPageState extends State<FollowingPage> {
                       height: 20,
                     ),
                     Expanded(
-                        child: FutureBuilder<List<Repository>>(
-                      future: _futureRepos,
+                        child: FutureBuilder<List<Organization>>(
+                      future: _futureOrgs,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return const Center(
                               child: CircularProgressIndicator());
                         } else {
-                          var followings = snapshot.data ?? [];
+                          var organizations = snapshot.data ?? [];
+                          if(organizations.isEmpty) {
+                            return const Text('User has no organizations');
+                          }
+
                           return ListView.builder(
-                            itemCount: followings.length,
+                            itemCount: organizations.length,
                             itemBuilder: ((context, index) {
-                              var repo = followings[index];
+                              var org = organizations[index];
                               return ListTile(
                                 leading: Icon(Icons.accessible),
-                                title: Text(repo.name),
+                                title: Text(org.name),
                                 trailing: const Text(
-                                  "Repository",
+                                  "Organization",
+                                  style: TextStyle(color: Colors.blueAccent),
+                                ),
+                              );
+                            }),
+                          );
+                        }
+                      },
+                    ))
+                  ]),
+            ),
+            // Quarta aba
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: CircleAvatar(
+                              radius: 50.0,
+                              backgroundColor: Colors.transparent,
+                              backgroundImage:
+                                  NetworkImage(widget.user.avatarUrl),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            widget.user.login,
+                            style: TextStyle(fontSize: 22),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Expanded(
+                        child: FutureBuilder<List<Subscription>>(
+                      future: _futureSubscriptions,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else {
+                          var subscriptions = snapshot.data ?? [];
+                          
+                          return ListView.builder(
+                            itemCount: subscriptions.length,
+                            itemBuilder: ((context, index) {
+                              var sub = subscriptions[index];
+                              return ListTile(
+                                leading: Icon(Icons.accessible),
+                                title: Text(sub.name),
+                                trailing: Text(
+                                  sub.description.length >= 20 ?
+                                  sub.description.substring(0, 19) :
+                                  sub.description,
                                   style: TextStyle(color: Colors.blueAccent),
                                 ),
                               );

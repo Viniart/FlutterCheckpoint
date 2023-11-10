@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:github_api_demo/models/organization.dart';
 import 'package:github_api_demo/models/repository.dart';
+import 'package:github_api_demo/models/subscription.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/user.dart';
@@ -52,7 +53,7 @@ class GitHubApi {
     }
   }
 
-  void getSubscriptions(String userName) async {
+  Future<List<Subscription>> getSubscriptions(String userName) async {
     final url = '${baseUrl}users/$userName/subscriptions';
     var response = await http.get(
       Uri.parse(url),
@@ -63,18 +64,14 @@ class GitHubApi {
       },
     );
 
-    var jsonList = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      var jsonList = jsonDecode(response.body);
+      var users = jsonList.map<Subscription>((json) => Subscription.fromJson(json)).toList();
 
-    print(jsonList);
-
-    // if (response.statusCode == 200) {
-    //   var jsonList = jsonDecode(response.body);
-    //   var users = jsonList.map<User>((json) => User.fromJson(json)).toList();
-
-    //   return users ?? [];
-    // } else {
-    //   return [];
-    // }
+      return users ?? [];
+    } else {
+      return [];
+    }
   }
 
   Future<List<Organization>> getOrgs(String userName) async {
@@ -111,6 +108,7 @@ class GitHubApi {
 
     if (response.statusCode == 200) {
       var jsonList = jsonDecode(response.body);
+      print(json);
       var repositories = jsonList.map<Repository>((json) => Repository.fromJson(json)).toList();
 
       return repositories ?? [];
