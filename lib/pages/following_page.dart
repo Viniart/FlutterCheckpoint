@@ -158,7 +158,7 @@ class _FollowingPageState extends State<FollowingPage> {
                             itemBuilder: ((context, index) {
                               var repo = repositories[index];
                               return ListTile(
-                                leading: Icon(Icons.accessible),
+                                leading: Icon(Icons.report),
                                 title: Text(repo.name),
                                 trailing: const Text(
                                   "Repository",
@@ -290,8 +290,8 @@ class _FollowingPageState extends State<FollowingPage> {
                                 leading: Icon(Icons.accessible),
                                 title: Text(sub.name),
                                 trailing: Text(
-                                  sub.description.length >= 20 ?
-                                  sub.description.substring(0, 19) :
+                                  sub.description.length >= 70 ?
+                                  sub.description.substring(0, 70) :
                                   sub.description,
                                   style: TextStyle(color: Colors.blueAccent),
                                 ),
